@@ -1,12 +1,7 @@
 #!/usr/bin/env python
 
 """
-twitter-repeater is a bot that automatically retweets any tweets in which its name
-is "mentioned" in. In order for a tweet to be retweeted, the bot account must be
-following the original user who tweeted it, that user must not be on the ignore
-list, and the tweet must pass some basic quality tests.
-
-Please see the README at https://github.com/chooper/twitter-repeater/ for more info
+Likes tweets with a certain hashtag
 """
 
 # imports
@@ -112,6 +107,8 @@ def validate_env():
         'TW_CONSUMER_SECRET',
         'TW_ACCESS_TOKEN',
         'TW_ACCESS_TOKEN_SECRET',
+		'TW_Like_Min',
+		'TW_HashTag_Search'
         ]
 
     # Check for missing env vars
@@ -153,6 +150,8 @@ def main():
     consumer_secret   = os.environ.get('TW_CONSUMER_SECRET')
     access_key        = os.environ.get('TW_ACCESS_TOKEN')
     access_secret     = os.environ.get('TW_ACCESS_TOKEN_SECRET')
+	like_min          = os.environ.get('TW_Like_Min')
+	target_hashtag    = os.environ.get('TW_HashTag_Search')
 
     auth = tweepy.OAuthHandler(consumer_key=consumer_key,
         consumer_secret=consumer_secret)
