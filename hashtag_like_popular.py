@@ -60,11 +60,6 @@ def validate_env():
 def fav_tweet(api,tweet,favorites,like_min):
 	"""Attempt to fav a tweet and return True if successful"""
 
-	#QA: don't like if too low
-	if tweet.favorite_count < like_min:
-		log(at='filter', reason='too unpopular', tweet=tweet.favorite_count)
-		return
-
 	# ignore tweet if we've already liked it
 	if tweet in favorites:
 		log(at='filter', reason='already_favorited', tweet=tweet.id)
@@ -92,7 +87,7 @@ def fetch_favorites(api):
 def fetch_hashtag_tweets(api,target_hashtag):
 	"""Fetch tweets with hashtag from twitter"""
 	with measure(at='fetch_hashtag'):
-		hashtag_tweets = api.search(q=target_hashtag, result_type='mixed', count=100)
+		hashtag_tweets = api.search(q=target_hashtag, result_type='popular', count=10)
 	return hashtag_tweets
 
 def main():
