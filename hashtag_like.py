@@ -96,7 +96,7 @@ def main():
 	consumer_secret   = '9UEYoUq0eeQEsh9HYtMpOZmLVmVVv2XSRZcJdYGQgB58v1Gfad'
 	access_key        = '1016807309987778560-INAuq1xeAp2kGwIceYupSExzsez2r2'
 	access_secret     = 'GtHYIXFXbRLd0kuiuikHjecughIPnjIIUI9nseVydSWy1'
-	like_min	= 4
+	like_min	= 6
 	target_hashtag_one    = 'indiedev'
 	target_hashtag_two = 'madewithunity'
 
