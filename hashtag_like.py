@@ -57,7 +57,7 @@ def validate_env():
     # Log success
     log(at='validate_env', status='ok')
 
-def fav_tweet(api,tweet,favorites,like_min):
+def fav_tweet(api,tweet,favorites):
 	"""Attempt to fav a tweet and return True if successful"""
 
 	#QA: don't like if too low
@@ -96,6 +96,7 @@ def fetch_hashtag_tweets(api,target_hashtag):
 		hashtag_tweets = api.search(q=target_hashtag, result_type='mixed', count=100)
 	return hashtag_tweets
 
+	
 def main():
     log(at='main')
     main_start = time.time()
@@ -115,20 +116,21 @@ def main():
         consumer_secret=consumer_secret)
     auth.set_access_token(access_key, access_secret)
 
-    api = tweepy.API(auth_handler=auth, retry_count=3)
+    api = tweepy.API(auth_handler=auth, secure=True, retry_count=3)
 	favorites = fetch_favorites(api)
 	tweet_Search = fetch_hashtag_tweets(api,target_hashtag)
 
     for tweet in tweet_Search:
 	
         try:
-            fav_tweet(api,tweet,favorites,like_min)
+            fav_tweet(api,tweet,favorites)
         except HTTPError, e:
             log(at='rt_error', klass='HTTPError', code=e.code(), body_size=len(e.read()))
             debug_print(e.code())
             debug_print(e.read())
         except Exception, e:
             log(at='rt_error', klass='Exception', msg="'{0}'".format(str(e)))
+            debug_print('e: %s' % e)
             raise
 
     log(at='finish', status='ok', duration=time.time() - main_start)
