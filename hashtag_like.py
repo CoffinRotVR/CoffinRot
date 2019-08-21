@@ -57,45 +57,27 @@ def validate_env():
     # Log success
     log(at='validate_env', status='ok')
 
-def fav_tweet(api,tweet,favorites):
-	"""Attempt to fav a tweet and return True if successful"""
+def fav_tweet(api,tweet):
+    """Attempt to fav a tweet and return True if successful"""
 
-	#QA: don't like if too low
-	if tweet.favorite_count < like_min:
-		log(at='filter', reason='too unpopular', tweet=tweet.favorite_count)
-		return
+    # sometimes this raises TweepError even if reply.favorited
+    # was False
+    try:
+        api.create_favorite(id=tweet.id)
+    except tweepy.TweepError, e:
+        log(at='fav_error', tweet=tweet.id, klass='TweepError', msg="'{0}'".format(str(e)))
+        return False
 
-	# ignore tweet if we've already liked it
-	if tweet in favorites:
-		log(at='filter', reason='already_favorited', tweet=tweet.id)
-		return
-
-
-	# sometimes this raises TweepError even if reply.favorited
-	# was False
-	try:
-		api.create_favorite(id=tweet.id)
-	except tweepy.TweepError, e:
-		log(at='fav_error', tweet=tweet.id, klass='TweepError', msg="'{0}'".format(str(e)))
-		return False
-
-	log(at='favorite', tweet=tweet.id)
-	return True
+    log(at='favorite', tweet=tweet.id)
+    return True
 
 @backoff.on_exception(backoff.expo, tweepy.TweepError, max_tries=8)
 
-def fetch_favorites(api):
-    """Fetch favorites from twitter"""
-    with measure(at='fetch_favorites'):
-        favorites = api.favorites()
-    return favorites
-	
 def fetch_hashtag_tweets(api,target_hashtag):
-	"""Fetch tweets with hashtag from twitter"""
-	with measure(at='fetch_hashtag'):
-		hashtag_tweets = api.search(q=target_hashtag, result_type='mixed', count=100)
-	return hashtag_tweets
-
+    """Fetch tweets with hashtag from twitter"""
+    with measure(at='fetch_hashtag'):
+        hashtag_tweets = api.search(target_hashtag)
+    return hashtag_tweets
 	
 def main():
     log(at='main')
@@ -117,13 +99,14 @@ def main():
     auth.set_access_token(access_key, access_secret)
 
     api = tweepy.API(auth_handler=auth, secure=True, retry_count=3)
-	favorites = fetch_favorites(api)
 	tweet_Search = fetch_hashtag_tweets(api,target_hashtag)
+
+    log(at='fetched_from_api', friends=len(friends), mentions=len(replies))
 
     for tweet in tweet_Search:
 	
         try:
-            fav_tweet(api,tweet,favorites)
+            fav_tweet(api,tweet)
         except HTTPError, e:
             log(at='rt_error', klass='HTTPError', code=e.code(), body_size=len(e.read()))
             debug_print(e.code())
