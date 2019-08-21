@@ -57,66 +57,86 @@ def validate_env():
     # Log success
     log(at='validate_env', status='ok')
 
-def fav_tweet(api,tweet):
-    """Attempt to fav a tweet and return True if successful"""
+def fav_tweet(api,tweet,like_min):
+	"""Attempt to fav a tweet and return True if successful"""
 
-    # sometimes this raises TweepError even if reply.favorited
-    # was False
-    try:
-        api.create_favorite(id=tweet.id)
-    except tweepy.TweepError, e:
-        log(at='fav_error', tweet=tweet.id, klass='TweepError', msg="'{0}'".format(str(e)))
-        return False
+	#QA: don't like if too low
+	if tweet.favorite_count < like_min:
+		log(at='filter', reason='too unpopular', tweet=tweet.favorite_count)
+		return
 
-    log(at='favorite', tweet=tweet.id)
-    return True
+	# sometimes this raises TweepError even if reply.favorited
+	# was False
+	try:
+		api.create_favorite(id=tweet.id)
+	except tweepy.TweepError, e:
+		log(at='fav_error', tweet=tweet.id, klass='TweepError', msg="'{0}'".format(str(e)))
+		return False
+
+	log(at='favorite', tweet=tweet.id)
+	return True
 
 @backoff.on_exception(backoff.expo, tweepy.TweepError, max_tries=8)
 
 def fetch_hashtag_tweets(api,target_hashtag):
     """Fetch tweets with hashtag from twitter"""
     with measure(at='fetch_hashtag'):
-        hashtag_tweets = api.search(target_hashtag)
+        hashtag_tweets = api.search(target_hashtag,count=100)
     return hashtag_tweets
 	
 def main():
-    log(at='main')
-    main_start = time.time()
+	log(at='main')
+	main_start = time.time()
 
-    validate_env()
 
-    owner_username    = os.environ.get('TW_OWNER_USERNAME')
-    username          = os.environ.get('TW_USERNAME')
-    consumer_key      = os.environ.get('TW_CONSUMER_KEY')
-    consumer_secret   = os.environ.get('TW_CONSUMER_SECRET')
-    access_key        = os.environ.get('TW_ACCESS_TOKEN')
-    access_secret     = os.environ.get('TW_ACCESS_TOKEN_SECRET')
-	like_min          = os.environ.get('TW_Like_Min')
-	target_hashtag    = os.environ.get('TW_HashTag_Search')
 
-    auth = tweepy.OAuthHandler(consumer_key=consumer_key,
-        consumer_secret=consumer_secret)
-    auth.set_access_token(access_key, access_secret)
+	owner_username    = 'CoffinRotVR'
+	username          = 'CoffinRotVR'
+	consumer_key      = 'HkhVMRqpOWB0ZjROrXgrmTiWS'
+	consumer_secret   = '9UEYoUq0eeQEsh9HYtMpOZmLVmVVv2XSRZcJdYGQgB58v1Gfad'
+	access_key        = '1016807309987778560-INAuq1xeAp2kGwIceYupSExzsez2r2'
+	access_secret     = 'GtHYIXFXbRLd0kuiuikHjecughIPnjIIUI9nseVydSWy1'
+	like_min	= 4
+	target_hashtag_one    = 'indiedev'
+	target_hashtag_two = 'madewithunity'
 
-    api = tweepy.API(auth_handler=auth, secure=True, retry_count=3)
-	tweet_Search = fetch_hashtag_tweets(api,target_hashtag)
+	auth = tweepy.OAuthHandler(consumer_key=consumer_key,
+		consumer_secret=consumer_secret)
+	auth.set_access_token(access_key, access_secret)
 
-    log(at='fetched_from_api', friends=len(friends), mentions=len(replies))
+	api = tweepy.API(auth_handler=auth, retry_count=3)
+	tweet_Search = fetch_hashtag_tweets(api,target_hashtag_one)
 
-    for tweet in tweet_Search:
-	
-        try:
-            fav_tweet(api,tweet)
-        except HTTPError, e:
-            log(at='rt_error', klass='HTTPError', code=e.code(), body_size=len(e.read()))
-            debug_print(e.code())
-            debug_print(e.read())
-        except Exception, e:
-            log(at='rt_error', klass='Exception', msg="'{0}'".format(str(e)))
-            debug_print('e: %s' % e)
-            raise
 
-    log(at='finish', status='ok', duration=time.time() - main_start)
+	for tweet in tweet_Search:
+
+		try:
+			fav_tweet(api,tweet,like_min)
+		except HTTPError, e:
+			log(at='rt_error', klass='HTTPError', code=e.code(), body_size=len(e.read()))
+			debug_print(e.code())
+			debug_print(e.read())
+		except Exception, e:
+			log(at='rt_error', klass='Exception', msg="'{0}'".format(str(e)))
+			raise
+			
+	tweet_Search = fetch_hashtag_tweets(api,target_hashtag_two)
+
+
+	for tweet in tweet_Search:
+
+		try:
+			fav_tweet(api,tweet,like_min)
+		except HTTPError, e:
+			log(at='rt_error', klass='HTTPError', code=e.code(), body_size=len(e.read()))
+			debug_print(e.code())
+			debug_print(e.read())
+		except Exception, e:
+			log(at='rt_error', klass='Exception', msg="'{0}'".format(str(e)))
+			raise
+			
+
+	log(at='finish', status='ok', duration=time.time() - main_start)
 
 if __name__ == '__main__':
     # set up rollbar
