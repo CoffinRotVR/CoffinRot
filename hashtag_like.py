@@ -83,6 +83,7 @@ def fav_tweet(api,tweet,favorites,like_min):
 	return True
 
 @backoff.on_exception(backoff.expo, tweepy.TweepError, max_tries=8)
+
 def fetch_favorites(api):
     """Fetch favorites from twitter"""
     with measure(at='fetch_favorites'):
