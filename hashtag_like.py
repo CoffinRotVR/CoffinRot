@@ -98,7 +98,7 @@ def main():
 	access_secret     = 'GtHYIXFXbRLd0kuiuikHjecughIPnjIIUI9nseVydSWy1'
 	like_min	= 6
 	target_hashtag_one    = 'indiedev'
-	target_hashtag_two = 'madewithunity'
+	target_hashtag_two = 'vr'
 
 	auth = tweepy.OAuthHandler(consumer_key=consumer_key,
 		consumer_secret=consumer_secret)
