@@ -83,6 +83,11 @@ def fetch_hashtag_tweets(api,target_hashtag):
     with measure(at='fetch_hashtag'):
         hashtag_tweets = api.search(target_hashtag,count=100)
     return hashtag_tweets
+
+def fetch_timeline_tweets(api):
+	timeline_tweets = api.home_timeline(count=50,exclude_replies='true')
+	return timeline_tweets
+	
 	
 def main():
 	log(at='main')
@@ -97,8 +102,9 @@ def main():
 	access_key        = '1016807309987778560-INAuq1xeAp2kGwIceYupSExzsez2r2'
 	access_secret     = 'GtHYIXFXbRLd0kuiuikHjecughIPnjIIUI9nseVydSWy1'
 	like_min	= 6
+	like_min_timeline = 20
 	target_hashtag_one    = 'indiedev'
-	target_hashtag_two = 'vr'
+	target_hashtag_two = 'madewithunity'
 
 	auth = tweepy.OAuthHandler(consumer_key=consumer_key,
 		consumer_secret=consumer_secret)
@@ -135,6 +141,18 @@ def main():
 			log(at='rt_error', klass='Exception', msg="'{0}'".format(str(e)))
 			raise
 			
+	timeline_Search = fetch_timeline_tweets(api)
+	
+	for tweet in timeline_Search:
+		try:
+			fav_tweet(api,tweet,like_min_timeline)
+		except HTTPError, e:
+			log(at='rt_error', klass='HTTPError', code=e.code(), body_size=len(e.read()))
+			debug_print(e.code())
+			debug_print(e.read())
+		except Exception, e:
+			log(at='rt_error', klass='Exception', msg="'{0}'".format(str(e)))
+			raise
 
 	log(at='finish', status='ok', duration=time.time() - main_start)
 
