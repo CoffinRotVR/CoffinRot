@@ -143,16 +143,16 @@ def main():
 			
 	timeline_Search = fetch_timeline_tweets(api)
 	
-	for tweet in timeline_Search:
-		try:
-			fav_tweet(api,tweet,like_min_timeline)
-		except HTTPError, e:
-			log(at='rt_error', klass='HTTPError', code=e.code(), body_size=len(e.read()))
-			debug_print(e.code())
-			debug_print(e.read())
-		except Exception, e:
-			log(at='rt_error', klass='Exception', msg="'{0}'".format(str(e)))
-			raise
+	# for tweet in timeline_Search:
+		# try:
+			# fav_tweet(api,tweet,like_min_timeline)
+		# except HTTPError, e:
+			# log(at='rt_error', klass='HTTPError', code=e.code(), body_size=len(e.read()))
+			# debug_print(e.code())
+			# debug_print(e.read())
+		# except Exception, e:
+			# log(at='rt_error', klass='Exception', msg="'{0}'".format(str(e)))
+			# raise
 
 	log(at='finish', status='ok', duration=time.time() - main_start)
 
